@@ -25,9 +25,10 @@ try {
 // >> DATA FETCHING LOGIC (UPDATED FOR isDone = 0) <<
 // =============================================================
 
-$current_date = date('Y-m-d');$total_undone_bookings = 0;
+$current_date = date('Y-m-d');
+$total_undone_bookings = 0;
 
-$stmt =$pdo->prepare("
+$stmt = $pdo->prepare("
     SELECT
         s.id_seat,
         s.seat_name,
@@ -44,25 +45,28 @@ $stmt =$pdo->prepare("
     ORDER BY s.id_seat
 ");
 
-$stmt->execute(['current_date' =>$current_date]);
-$seats =$stmt->fetchAll();
+$stmt->execute(['current_date' => $current_date]);
+$seats = $stmt->fetchAll();
 
 $seat_map = [];
-foreach ($seats as $seat) {$seat_map[$seat['id_seat']] =$seat;
-    if ($seat['is_taken']) {$total_undone_bookings++;
+foreach ($seats as $seat) {
+    $seat_map[$seat['id_seat']] = $seat;
+    if ($seat['is_taken']) {
+        $total_undone_bookings++;
     }
 }
 
-$stmt_types =$pdo->query("SELECT id_type, name_type FROM visitor_type");
-$visitor_types =$stmt_types->fetchAll();
+$stmt_types = $pdo->query("SELECT id_type, name_type FROM visitor_type");
+$visitor_types = $stmt_types->fetchAll();
 
-function generate_seat_section($start_id,$end_id, $seat_map) {$output = '';
+function generate_seat_section($start_id, $end_id, $seat_map) {
+    $output = '';
     for ($id = $start_id; $id <= $end_id; $id++) {
         if (!isset($seat_map[$id])) continue;
        
         $seat = $seat_map[$id];
-        $is_taken =$seat['is_taken'];
-        $class =$is_taken ? 'seat-taken' : 'seat-available';
+        $is_taken = $seat['is_taken'];
+        $class = $is_taken ? 'seat-taken' : 'seat-available';
 
         $output .= '<button 
                         class="seat-button ' . $class . '" 
@@ -127,18 +131,20 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
         </div>
 
         <div class="seat-container"> 
+            <!-- Kolom Kiri (8 Kolom per baris) -->
             <div class="seat-section">
                 <?php 
-                    foreach ($row_starts as$start_id) {
-                        echo generate_seat_section($start_id, $start_id + 7,$seat_map); 
+                    foreach ($row_starts as $start_id) {
+                        echo generate_seat_section($start_id, $start_id + 7, $seat_map); 
                     }
                 ?>
             </div>
 
+            <!-- Kolom Kanan (8 Kolom per baris) -->
             <div class="seat-section">
                 <?php 
-                    foreach ($row_starts as$start_id) {
-                        echo generate_seat_section($start_id + 8, $start_id + 15,$seat_map); 
+                    foreach ($row_starts as $start_id) {
+                        echo generate_seat_section($start_id + 8, $start_id + 15, $seat_map); 
                     }
                 ?>
             </div>
@@ -176,7 +182,7 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" placeholder="e.g. John Doe (Optional)" style="margin-top: 10px;">
                 <div class="visitor-types-row">
-                    <?php foreach ($visitor_types as$type): ?>
+                    <?php foreach ($visitor_types as $type): ?>
                     <div class="form-check-custom">
                         <input type="radio" id="type_<?php echo $type['id_type']; ?>" name="id_type" value="<?php echo $type['id_type']; ?>" class="custom-radio">
                         <label for="type_<?php echo $type['id_type']; ?>"><?php echo htmlspecialchars($type['name_type']); ?></label>
@@ -198,7 +204,7 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
                 <p>Sudah ada yang pilih, Yakin mau dihapus?</p>
                 <div class="modal-actions">
                     <button id="deleteButton" class="custom-btn btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
-                    <button type="button" id="closeModalIconDelete" title="Close" class="custom-btn btn-success">Ga jadi hapus deh</button>
+                    <button type="button" id="closeModalIconDelete" title="Close" class="custom-btn btn-success">Cancel</button>
                 </div>
             </div>
            
@@ -245,7 +251,7 @@ $(document).ready(function() {
     });
 
     $(".seat-button").on("click", function() {
-        const $this =$(this);
+        const $this = $(this);
         const isTaken = $this.data('is-taken');
         const idSeat = $this.data('id-seat').toString();
         const seatName = $this.data('seat-name');
@@ -285,7 +291,8 @@ $(document).ready(function() {
         if (selectedSeatIDs.length === 0) return;
         const seatNames = selectedSeatIDs.map(id => $(`[data-id-seat="${id}"]`).data('seat-name'));
         
-        $('#modal-title').text('Take ' + selectedSeatIDs.length + ' Seat(s)'); $('#selectedSeatsDisplay').html('<p>Selected Seats: <strong>' + seatNames.join(', ') + '</strong></p>');
+        $('#modal-title').text('Take ' + selectedSeatIDs.length + ' Seat(s)'); 
+        $('#selectedSeatsDisplay').html('<p>Selected Seats: <strong>' + seatNames.join(', ') + '</strong></p>');
         
         $('#bookingForm input[name="id_seats[]"]').remove();
         selectedSeatIDs.forEach(id => {
@@ -344,17 +351,21 @@ $(document).ready(function() {
         });
     });
 
-    const $finishDayModal =$('#finishDayModal');
-    const $finishDayBtn =$('#finishDayBtn');
-    const $confirmFinishBtn =$('#confirmFinish');
+    const $finishDayModal = $('#finishDayModal');
+    const $finishDayBtn = $('#finishDayBtn');
+    const $confirmFinishBtn = $('#confirmFinish');
 
     $finishDayBtn.on('click', function() {
-        if (!$(this).prop('disabled'))$finishDayModal.fadeIn(200);
+        if (!$(this).prop('disabled')) $finishDayModal.fadeIn(200);
     });
 
     $('#cancelFinish').on('click', function() {
-        $finishDayModal.fadeOut(200);     });$confirmFinishBtn.on('click', function() {
-        $finishDayModal.fadeOut(200);$.ajax({
+        $finishDayModal.fadeOut(200);     
+    });
+
+    $confirmFinishBtn.on('click', function() {
+        $finishDayModal.fadeOut(200);
+        $.ajax({
             url: 'process.php',
             type: 'POST',
             data: { action: 'finish_day' },

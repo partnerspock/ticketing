@@ -34,19 +34,29 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* History-specific overrides */
+        /* --- History-specific overrides & Fix No Vertical Scroll --- */
+        body {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden; /* Mencegah scroll vertikal di halaman history */
+        }
+
         .history-page {
             width: 100%;
             max-width: 1100px;
-            background-color: var(--surface-card);
+            max-height: 96vh;
+            background-color: rgba(42, 40, 38, 0.1); /* Transparan 90% */
+            backdrop-filter: blur(2px); /* Efek blur kaca */
+            -webkit-backdrop-filter: blur(2px);
             border-radius: 1.5rem;
             border: 1px solid var(--border-warm);
-            padding: 2rem;
+            padding: 1.5rem 2rem;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
         }
 
         .history-header {
@@ -55,13 +65,14 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
-            padding-bottom: 1rem;
+            padding-bottom: 0.75rem;
             border-bottom: 1px solid var(--border-warm);
+            flex-shrink: 0;
         }
 
         .history-header h2 {
             margin: 0;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--text-main);
         }
@@ -74,12 +85,12 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
         }
 
         .history-controls input[type="date"] {
-            padding: 0.65rem 0.9rem;
+            padding: 0.55rem 0.8rem;
             background-color: #24201c;
             border: 1px solid var(--border-warm);
-            border-radius: 0.75rem;
+            border-radius: 0.65rem;
             color: var(--text-main);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             outline: none;
             transition: border-color 0.2s;
         }
@@ -94,8 +105,9 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
             gap: 1.5rem;
             flex-wrap: wrap;
             align-items: center;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
+            flex-shrink: 0;
         }
 
         .stat-chip {
@@ -106,7 +118,7 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
             border: 1px solid var(--border-warm);
             border-radius: 9999px;
             padding: 0.3rem 0.8rem;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-main);
         }
@@ -124,7 +136,10 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
         #history-results {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: 0.25rem;
         }
 
         #history-results .seat-container {
@@ -155,34 +170,34 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
         /* Placeholder message */
         .history-placeholder {
             text-align: center;
-            padding: 3rem 1rem;
+            padding: 2.5rem 1rem;
             color: var(--text-muted);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .history-placeholder i {
             display: block;
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             margin-bottom: 0.75rem;
             opacity: 0.4;
         }
 
         .alert-info-custom {
-            background: rgba(56,189,248,0.08);
-            border: 1px solid rgba(56,189,248,0.25);
+            background: rgba(34,197,94,0.08);
+            border: 1px solid rgba(34,197,94,0.25);
             border-radius: 0.75rem;
-            padding: 1rem 1.25rem;
+            padding: 0.85rem 1.1rem;
             color: var(--accent-blue);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .alert-error-custom {
             background: rgba(244,63,94,0.08);
             border: 1px solid rgba(244,63,94,0.25);
             border-radius: 0.75rem;
-            padding: 1rem 1.25rem;
+            padding: 0.85rem 1.1rem;
             color: var(--accent-red);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         @media (max-width: 768px) {
@@ -197,18 +212,18 @@ $row_starts = [1, 17, 33, 49, 65, 81, 97, 113, 129, 145];
     <div class="history-page">
 
         <!-- HEADER -->
-        <div class="history-header" style="justify-content: space-between;">
+        <div class="history-header">
             <div class="history-controls">
-                <a href="index.php" class="custom-btn">
+                <a href="index.php" class="custom-btn btn-primary" style="padding: 0.55rem 1rem; font-size: 0.85rem;">
                     <i class="fa-solid fa-arrow-left"></i> Back to Seat Map
                 </a>
             </div>
             <div>
-                <h2><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue);margin-right:0.4rem;"></i>Attendance History</h2>
+                <h2 style="color:var(--accent-blue);"><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue);margin-right:0.4rem;"></i>Attendance History</h2>
             </div>
             <div class="history-controls">
                 <input type="date" id="select_date" value="<?php echo date('Y-m-d'); ?>">
-                <button id="viewHistoryBtn" class="custom-btn btn-primary">
+                <button id="viewHistoryBtn" class="custom-btn btn-primary" style="padding: 0.55rem 1rem; font-size: 0.85rem;">
                     <i class="fa-solid fa-magnifying-glass"></i> View
                 </button>
             </div>
